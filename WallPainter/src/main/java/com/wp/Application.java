@@ -15,6 +15,7 @@ import com.wp.storage.StorageService;
 public class Application {
 
     public static void main(String[] args) {
+        //System.out.println(System.getProperty("java.class.path"));
         SpringApplication.run(Application.class, args);
     }
 

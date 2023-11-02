@@ -38,10 +38,11 @@ public class FileUploadController {
 
 
     @Autowired
-    public FileUploadController(StorageService storageService, DatagramSocket datagramSocket,@Value("pythonadress") String pythonadress) {
+    public FileUploadController(StorageService storageService, DatagramSocket datagramSocket,@Value("${pythonadress}") String pythonadress) {
         this.storageService = storageService;
         this.ds = datagramSocket;
         this.adress = pythonadress;
+        System.out.println(this.adress);
     }
 
     @GetMapping("/")
@@ -71,19 +72,26 @@ public class FileUploadController {
     @PostMapping("/")
     public String handleFileUpload(@RequestParam("file") MultipartFile file,
                                    RedirectAttributes redirectAttributes){
+        storageService.store(file);
         try {
             byte[] file_tab = file.getBytes();
-            ds.send(new DatagramPacket(file_tab,file_tab.length, InetAddress.getByName(adress),9001));
+            System.out.println("Wysyłam");
+            System.out.println(ds.getLocalPort());
+            DatagramPacket dp = new DatagramPacket(file_tab,file_tab.length, InetAddress.getByName(adress),5001);
+            System.out.println(dp.getAddress());
+            System.out.println(dp.getPort());
+            ds.send(dp);
+            System.out.println("Wysłałem");
         }
         catch (IOException e){
+            System.out.println("Tu jest pies pogrzebany");
         }
-        storageService.store(file);
+
         redirectAttributes.addFlashAttribute("message",
                 "You successfully uploaded " + file.getOriginalFilename() + "!");
 
         return "redirect:/";
     }
-    @GetMapping("/files/{filename:.+}")
 
 
     @ExceptionHandler(StorageFileNotFoundException.class)
