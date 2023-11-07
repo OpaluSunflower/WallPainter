@@ -1,31 +1,26 @@
 package com.wp;
 
-import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
-import java.util.stream.Collectors;
-
+import com.wp.storage.StorageFileNotFoundException;
+import com.wp.storage.StorageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import com.wp.storage.StorageFileNotFoundException;
-import com.wp.storage.StorageService;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.net.DatagramSocket;
+import java.net.Socket;
+import java.nio.charset.StandardCharsets;
+import java.util.stream.Collectors;
 
 @Controller
 public class FileUploadController {
@@ -73,18 +68,16 @@ public class FileUploadController {
     public String handleFileUpload(@RequestParam("file") MultipartFile file,
                                    RedirectAttributes redirectAttributes){
         storageService.store(file);
-        try {
-            byte[] file_tab = file.getBytes();
-            System.out.println("Wysyłam");
-            System.out.println(ds.getLocalPort());
-            DatagramPacket dp = new DatagramPacket(file_tab,file_tab.length, InetAddress.getByName(adress),5001);
-            System.out.println(dp.getAddress());
-            System.out.println(dp.getPort());
-            ds.send(dp);
-            System.out.println("Wysłałem");
+        try(Socket socket = new Socket("127.0.0.1",11000)){
+            DataOutputStream out = new DataOutputStream(socket.getOutputStream());
+            DataInputStream in = new DataInputStream(socket.getInputStream());
+            out.write(file.getBytes());
+            out.write("\r\n".getBytes());
+            out.flush();
+            System.out.println(new String(in.readAllBytes(), StandardCharsets.UTF_8));
         }
-        catch (IOException e){
-            System.out.println("Tu jest pies pogrzebany");
+        catch (Exception e){
+            System.out.println(e.getCause());
         }
 
         redirectAttributes.addFlashAttribute("message",
