@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -45,12 +46,13 @@ public class FileUploadController {
 
     @GetMapping("/")
     public String listUploadedFiles(Model model) throws IOException {
-
+        System.out.println("tEST");
+        /*
         model.addAttribute("files", storageService.loadAll().map(
                         path -> MvcUriComponentsBuilder.fromMethodName(FileUploadController.class,
                                 "serveFile", path.getFileName().toString()).build().toUri().toString())
                 .collect(Collectors.toList()));
-
+        */
         //return "uploadForm";
         return "index";
     }
@@ -59,6 +61,7 @@ public class FileUploadController {
     @ResponseBody
     public ResponseEntity<Resource> serveFile(@PathVariable String filename) {
 
+        //System.out.println("Filename:" + filename);
         Resource file = storageService.loadAsResource(filename);
 
         if (file == null)
@@ -71,33 +74,42 @@ public class FileUploadController {
     @GetMapping("/assets/bootstrap/{javaorcss}/{filename}")
     @ResponseBody
     public ResponseEntity<Resource> returnResources(@PathVariable String filename, @PathVariable String javaorcss) throws MalformedURLException {
-        System.out.println(filename + javaorcss);
+        System.out.println("Resources: "+filename + javaorcss);
         Path file = Paths.get("src/main/resources/templates/assets/bootstrap/"+javaorcss+"/"+filename);
         Resource resource = new UrlResource(file.toUri());
         return ResponseEntity.ok().body(resource);
     }
 
+    @GetMapping("/assets/{javaorcss}/{filename}")
+    @ResponseBody
+    public ResponseEntity<Resource> returnResources1(@PathVariable String javaorcss, @PathVariable String filename) throws MalformedURLException {
+        System.out.println("Resourceseee: "+javaorcss + filename);
+        Path file = Paths.get("src/main/resources/templates/assets/"+javaorcss+"/"+filename);
+        Resource resource = new UrlResource(file.toUri());
+        return ResponseEntity.ok().body(resource);
+    }
+
     @PostMapping("/")
-    public String handleFileUpload(@RequestParam("file") MultipartFile file,
+    public String handleFileUpload(@RequestParam("file") MultipartFile file, @RequestParam("color") String color,
                                    RedirectAttributes redirectAttributes){
+        System.out.println(file.getOriginalFilename());
+        System.out.println(color);
         storageService.store(file);
         try(Socket socket = new Socket("127.0.0.1",11000)){
             DataOutputStream out = new DataOutputStream(socket.getOutputStream());
             DataInputStream in = new DataInputStream(socket.getInputStream());
-            System.out.println("Wysłem");
+            //System.out.println("Wysłem");
             out.write(file.getBytes());
             out.write("\r\n".getBytes());
             out.flush();
-            Path p1 = Path.of("plik.jpg");
-            Path p2 = Files.createFile(p1);
-            Files.write(p2, in.readAllBytes());
+            //Path p1 = Path.of("plik.jpg");
+            //Path p2 = Files.createFile(p1);
+            //Files.write(p2, in.readAllBytes());
         }
         catch (Exception e){
             System.out.println(e.getCause());
         }
 
-        redirectAttributes.addFlashAttribute("message",
-                "You successfully uploaded " + file.getOriginalFilename() + "!");
 
         return "redirect:/";
     }
