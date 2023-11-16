@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html data-bs-theme="light" lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <title>WallPainter</title>
+    <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="assets/css/styles.css">
+</head>
+
+<body class="fw-semibold" style="background: var(--bs-light-border-subtle);">
+    <section>
+        <div class="justify-content-center align-items-center">
+            <h1 class="display-2 fw-semibold text-center text-success d-flex justify-content-center align-items-center">WallPainterApp</h1>
+            <p class="lead d-flex justify-content-center align-items-center">Check, which paint maches your room</p>
+        </div>
+    </section>
+    <section>
+        <div id="picture" th:if="${file_path}">
+            <h1 th:text="${file_path}"></h1>
+            <img th:src="@{${'/files/' + file_path}}">
+        </div>
+        <div class="d-grid flex-column align-items-center" style="height: 190px;margin: 60px;">
+            <form method="post" action="/" enctype="multipart/form-data">
+                <div class="d-md-flex justify-content-md-center">
+                    <p class="text-center">Select picture</p>
+                </div>
+                <div class="d-md-flex justify-content-md-center"><input class="form-control" name="file"type="file"></div>
+                <div class="d-md-flex justify-content-md-center">
+                    <p style="margin: 10px;">Select color</p>
+                </div>
+                <div class="d-md-flex justify-content-md-center"><input class="form-control form-control-color" name="color" type="color" style="width: 150px;"></div>
+                <div class="d-md-flex justify-content-md-center"><input class="btn btn-primary d-md-flex" type="submit"></div>
+            </form>
+        </div>
+    </section>
+    <script src="assets/bootstrap/js/bootstrap.min.js"></script>
+</body>
+
+</html>

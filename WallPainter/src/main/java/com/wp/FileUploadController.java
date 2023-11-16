@@ -46,14 +46,13 @@ public class FileUploadController {
 
     @GetMapping("/")
     public String listUploadedFiles(Model model) throws IOException {
-        System.out.println("tEST");
         /*
         model.addAttribute("files", storageService.loadAll().map(
                         path -> MvcUriComponentsBuilder.fromMethodName(FileUploadController.class,
                                 "serveFile", path.getFileName().toString()).build().toUri().toString())
-                .collect(Collectors.toList()));
-        */
+                .collect(Collectors.toList()));*/
         //return "uploadForm";
+        System.out.println("No siema");
         return "index";
     }
 
@@ -61,7 +60,7 @@ public class FileUploadController {
     @ResponseBody
     public ResponseEntity<Resource> serveFile(@PathVariable String filename) {
 
-        //System.out.println("Filename:" + filename);
+        System.out.println("Filename:" + filename);
         Resource file = storageService.loadAsResource(filename);
 
         if (file == null)
@@ -99,18 +98,17 @@ public class FileUploadController {
             DataOutputStream out = new DataOutputStream(socket.getOutputStream());
             DataInputStream in = new DataInputStream(socket.getInputStream());
             //System.out.println("Wysłem");
+            out.write("**file**".getBytes());
             out.write(file.getBytes());
+            out.write("**color**".getBytes());
+            out.write(color.getBytes());
             out.write("\r\n".getBytes());
             out.flush();
-            //Path p1 = Path.of("plik.jpg");
-            //Path p2 = Files.createFile(p1);
-            //Files.write(p2, in.readAllBytes());
+            redirectAttributes.addFlashAttribute("file_path",storageService.store(in));
         }
         catch (Exception e){
             System.out.println(e.getCause());
         }
-
-
         return "redirect:/";
     }
 

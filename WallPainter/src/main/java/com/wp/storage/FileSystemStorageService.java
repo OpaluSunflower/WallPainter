@@ -1,5 +1,9 @@
 package com.wp.storage;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Calendar;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -55,6 +59,30 @@ public class FileSystemStorageService implements StorageService {
         catch (IOException e) {
             throw new StorageException("Failed to store file.", e);
         }
+    }
+    @Override
+    public String store(InputStream inputStream){
+        Date date = Calendar.getInstance().getTime();
+        DateFormat dateFormat = new SimpleDateFormat("hhmmss");
+        String strDate = dateFormat.format(date);
+        String filename = strDate+".jpg";
+        Path destinationFile = this.rootLocation.resolve(
+                        Paths.get(filename))
+                .normalize().toAbsolutePath();
+        if (!destinationFile.getParent().equals(this.rootLocation.toAbsolutePath())) {
+            // This is a security check
+            throw new StorageException(
+                    "Cannot store file outside current directory.");
+        }
+        try {
+            Files.copy(inputStream, destinationFile,
+                    StandardCopyOption.REPLACE_EXISTING);
+        }
+        catch (IOException e) {
+        throw new StorageException("Failed to store file.", e);
+        }
+        return filename;
+
     }
 
     @Override
